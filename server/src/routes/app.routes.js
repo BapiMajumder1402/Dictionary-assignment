@@ -5,7 +5,9 @@ import {
     addMeaning,
     updateMeaning,
     deleteMeaning,
-    updateWordName
+    updateWordName,
+    searchWords,
+    getWordById
 } from '../controllers/words.controller.js';
 
 const router = Router();
@@ -21,5 +23,11 @@ router.put('/words/:id/meanings/:meaningId', updateMeaning);
 router.delete('/words/:id/meanings/:meaningId', deleteMeaning);
 
 router.put('/words/:id', updateWordName);
+
+router.get('/words/search', searchWords);
+
+router.get('/words/:id', getWordById);
+
+router.get('/words', getAllWords);
 
 export default router;

@@ -70,4 +70,48 @@ const updateWordName = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, word, 'Word updated successfully'));
 });
 
-export { addWord, deleteWord, addMeaning, updateMeaning, deleteMeaning, updateWordName };
+const searchWords = asyncHandler(async (req, res) => {
+    const { query } = req.query; 
+    const words = await Word.find({ word: { $regex: query, $options: 'i' } });
+    return res.status(200).json(new ApiResponse(200, words, 'Words retrieved successfully'));
+});
+
+const getWordById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const word = await Word.findById(id);
+    if (!word) {
+        throw new ApiError(404, 'Word not found');
+    }
+    return res.status(200).json(new ApiResponse(200, word, 'Word retrieved successfully'));
+});
+
+const getAllWords = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit; 
+
+    const words = await Word.find()
+        .limit(Number(limit))
+        .skip(Number(skip));
+    
+    const totalWords = await Word.countDocuments(); 
+    const totalPages = Math.ceil(totalWords / limit); 
+
+    return res.status(200).json(new ApiResponse(200, {
+        words,
+        totalWords,
+        totalPages,
+        currentPage: Number(page),
+    }, 'Words retrieved successfully'));
+});
+
+export { 
+    addWord, 
+    deleteWord, 
+    addMeaning, 
+    updateMeaning, 
+    deleteMeaning, 
+    updateWordName, 
+    searchWords, 
+    getWordById,
+    getAllWords 
+};
