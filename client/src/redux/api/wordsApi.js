@@ -5,7 +5,7 @@ const baseUrl = import.meta.env.VITE_API_URL;
 export const wordsApi = createApi({
     reducerPath: 'wordsApi',
     baseQuery: fetchBaseQuery({ baseUrl }),
-    tagTypes: ['Word'], 
+    tagTypes: ['Word', 'Search'], // Added 'Search' tag type
     endpoints: (builder) => ({
         getWords: builder.query({
             query: () => '/words',
@@ -33,15 +33,19 @@ export const wordsApi = createApi({
             query: ({ id, meaning }) => ({
                 url: `/words/${id}/meanings`,
                 method: 'POST',
-                body: meaning,
+                body: { meaning },
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: 'Word', id }], 
+            invalidatesTags: (result, error, { id }) => [
+                { type: 'Word', id },  // Invalidate the individual word
+                'Word',                // Invalidate the word list
+                { type: 'Search', id }, // Invalidate searchWords cache
+            ],
         }),
         updateMeaning: builder.mutation({
             query: ({ id, meaningId, meaning }) => ({
                 url: `/words/${id}/meanings/${meaningId}`,
                 method: 'PUT',
-                body: meaning,
+                body: { meaning },
             }),
             invalidatesTags: (result, error, { id }) => [{ type: 'Word', id }],
         }),
@@ -62,7 +66,7 @@ export const wordsApi = createApi({
         }),
         searchWords: builder.query({
             query: (searchQuery) => `/words/search?query=${searchQuery}`,
-            providesTags: ['Word'], 
+            providesTags: (result, error, id) => [{ type: 'Search', id}], 
         }),
         getWordById: builder.query({
             query: (id) => `/words/${id}`,
@@ -70,11 +74,12 @@ export const wordsApi = createApi({
         }),
         getAllWords: builder.query({
             query: ({ page = 1, limit = 10 }) => `/words?page=${page}&limit=${limit}`,
-            providesTags: (result) =>
-                result
-                    ? [...result.map(({ id }) => ({ type: 'Word', id })), 'Word']
-                    : ['Word'], 
+            providesTags: (result) => {
+                if (!result || !Array.isArray(result)) return ['Word'];
+                return [...result.map(({ id }) => ({ type: 'Word', id })), 'Word'];
+            },
         }),
+        
     }),
 });
 

@@ -8,4 +8,7 @@ p{font-family: Poppins;}
 h1,h2,h3,h4,h5,h6{font-family: Montserrat;}
 a{text-decoration: none;}
 a{font-family: Montserrat;}
-.page{min-height: 85vh;}
+button{outline: none;border: 0; background-color: transparent;}
+ol{padding: 0;}
+input{padding: .2rem .5rem;}
+.page{min-height: 90vh;}

@@ -5,10 +5,27 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 
 const addWord = asyncHandler(async (req, res) => {
     const { word } = req.body;
+    const existingWord = await Word.findOne({ word });
+    if (existingWord) {
+        return res.status(409).json({
+            status: 409,
+            message: 'Word already exists.',
+        });
+    }
     const newWord = new Word({ word });
-    await newWord.save();
-    return res.status(201).json(new ApiResponse(201, newWord, 'Word added successfully'));
+    try {
+        await newWord.save();
+        return res.status(201).json(new ApiResponse(201, newWord, 'Word added successfully'));
+    } catch (error) {
+        return res.status(500).json({
+            status: 500,
+            message: 'An error occurred while adding the word.',
+            error: error.message
+        });
+    }
 });
+
+
 
 const deleteWord = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -23,6 +40,8 @@ const deleteWord = asyncHandler(async (req, res) => {
 const addMeaning = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { meaning } = req.body;
+    console.log(id,meaning);
+    
     const word = await Word.findById(id);
     if (!word) {
         throw new ApiError(404, 'Word not found');
@@ -49,11 +68,16 @@ const updateMeaning = asyncHandler(async (req, res) => {
 
 const deleteMeaning = asyncHandler(async (req, res) => {
     const { id, meaningId } = req.params;
-    const word = await Word.findOne({ _id: id, 'meanings._id': meaningId });
+
+    const word = await Word.findById(id);
     if (!word) {
-        throw new ApiError(404, 'Word or meaning not found');
+        throw new ApiError(404, 'Word not found');
     }
-    word.meanings.id(meaningId).remove();
+    const meaningIndex = word.meanings.findIndex(meaning => meaning._id.toString() === meaningId);
+    if (meaningIndex === -1) {
+        throw new ApiError(404, 'Meaning not found');
+    }
+    word.meanings.splice(meaningIndex, 1);
     await word.save();
     return res.status(200).json(new ApiResponse(200, word, 'Meaning deleted successfully'));
 });

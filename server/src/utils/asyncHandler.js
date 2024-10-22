@@ -1,14 +1,20 @@
-const asyncHandler = (fn) => {
+import { ApiError } from "./apiErrorHandler.js";
+export const asyncHandler = (fn) => {
     return async (req, res, next) => {
         try {
             await fn(req, res, next);
         } catch (error) {
-            res.status(error.code || 500).json({
+            if (error instanceof ApiError) {
+                return res.status(error.statusCode).json({
+                    success: false,
+                    message: error.message,
+                    errors: error.errors,
+                });
+            }
+            res.status(500).json({
                 success: false,
-                message: error.message,
+                message: error.message || 'Internal Server Error',
             });
         }
     };
 };
-
-export { asyncHandler };

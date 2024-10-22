@@ -7,7 +7,8 @@ import {
     deleteMeaning,
     updateWordName,
     searchWords,
-    getWordById
+    getWordById,
+    getAllWords
 } from '../controllers/words.controller.js';
 
 const router = Router();
