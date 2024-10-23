@@ -16,3 +16,13 @@
 .addMeaningBox,.addMeaningBox input , .addMeaningBox button{width: 25rem;}
 .addMeaningBox input {padding: .5rem;margin-bottom: 1rem;}
 .notFoundText{color: #ff2e1f;}
+
+
+@media(max-width:500px){
+    .blackContainer{padding: 1rem;}
+    .searchContainer>div{width:100%;}
+    .searchAndData{min-height: 90vh;position: relative;padding: 1rem 1rem 5rem 1rem;}
+    .addMeaningBox,.addMeaningBox input , .addMeaningBox button{width: 100%;}
+    .quickAdd button{width: 3rem;height: 3rem;font-size: 1rem;}
+    .quickAdd{bottom: 1%;}
+}
