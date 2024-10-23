@@ -1,5 +1,5 @@
 .blackContainer{background-color: #1a1a1a;padding: 4rem;}
-.searchAndData{background-image: linear-gradient(95deg,#333,#212121);border-radius: 16px;min-height: 77vh;position: relative;}
+.searchAndData{background-image: linear-gradient(95deg,#333,#212121);border-radius: 16px;min-height: 77vh;position: relative;padding-bottom: 4rem;}
 .searchContainer{display: flex; align-items: center;;min-height: 20rem;flex-direction: column;padding: 5rem 0 0 0;}
 .searchContainer h2{padding-bottom: 1rem;background: linear-gradient(to right, #F78312 0%, #F44336 100%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;font-weight: 700;} 
 .searchContainer>div{width:25rem;}
@@ -15,3 +15,4 @@
 .saveButton{background-color: #158a53;}
 .addMeaningBox,.addMeaningBox input , .addMeaningBox button{width: 25rem;}
 .addMeaningBox input {padding: .5rem;margin-bottom: 1rem;}
+.notFoundText{color: #ff2e1f;}

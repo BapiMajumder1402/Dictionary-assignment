@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchWordsQuery, useAddWordMutation, useAddMeaningMutation, useGetWordByIdQuery, useDeleteMeaningMutation, useUpdateMeaningMutation } from '../../redux/api/wordsApi';
 import Select from 'react-select';
 import './SearchWord.css';
@@ -9,6 +9,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { BsFillSave2Fill } from "react-icons/bs";
+import toast from 'react-hot-toast';
 
 const SearchWord = () => {
   const [inputValue, setInputValue] = useState('');
@@ -19,16 +20,17 @@ const SearchWord = () => {
   const [editingIndex, setEditingIndex] = useState(null); 
   const [editingMeaning, setEditingMeaning] = useState(''); 
 
-  const { data: words = [], isLoading, isError } = useSearchWordsQuery(inputValue, {
-    skip: !inputValue,
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const { data: words = [], isLoading, isError } = useSearchWordsQuery(searchTerm, {
+    skip: !searchTerm,
   });
 
   const [addWord] = useAddWordMutation();
   const [addMeaning] = useAddMeaningMutation();
-  const [deleteMeaning] = useDeleteMeaningMutation(); // Hook for deleting a meaning
-  const [updateMeaning] = useUpdateMeaningMutation(); // Hook for updating a meaning
+  const [deleteMeaning] = useDeleteMeaningMutation();
+  const [updateMeaning] = useUpdateMeaningMutation(); 
 
-  // Fetch word details including meanings when a word is selected
   const { data: selectedWord, refetch: refetchWord } = useGetWordByIdQuery(selectedOption?.value, {
     skip: !selectedOption,
   });
@@ -45,54 +47,86 @@ const SearchWord = () => {
   const handleChange = (selected) => {
     setSelectedOption(selected);
     setMeaning('');
-    setEditingIndex(null); // Reset editing index on selection change
+    setEditingIndex(null);
   };
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (inputValue) {
+        setSearchTerm(inputValue);
+      } else {
+        setSearchTerm('');
+      }
+    }, 600); 
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [inputValue]);
 
   const handleAddWord = async () => {
-    if (newWord === '') return;
-    await addWord({ word: newWord });
-    setNewWord('');
-    setShowModal(false);
-  };
-
-  const handleAddMeaning = async (e) => {
-    e.preventDefault()
-    if (meaning === '' || !selectedOption) return;
+    if (newWord === '') {
+      toast.error('Word cannot be empty!');
+      return;
+    }
     try {
-      await addMeaning({ id: selectedOption.value, meaning });
-      setMeaning('');
-      refetchWord(); 
+      await addWord({ word: newWord });
+      setNewWord('');
+      setShowModal(false);
+      toast.success('Word added successfully!'); 
     } catch (error) {
-      console.error("Failed to add meaning:", error);
+      console.error("Failed to add word:", error);
+      toast.error('Failed to add word. Please try again.'); 
     }
   };
 
+  const handleAddMeaning = async (e) => {
+    e.preventDefault();
+    if (meaning === '' || !selectedOption) {
+      toast.error('Meaning cannot be empty or no word selected!');
+      return;
+    }
+    try {
+      await addMeaning({ id: selectedOption.value, meaning });
+      setMeaning('');
+      refetchWord();
+      toast.success('Meaning added successfully!'); 
+    } catch (error) {
+      console.error("Failed to add meaning:", error);
+      toast.error('Failed to add meaning. Please try again.');
+    }
+  };
 
   const handleDeleteMeaning = async (meaningId) => {
     try {
       await deleteMeaning({ id: selectedOption.value, meaningId });
-      refetchWord(); 
+      refetchWord();
+      toast.success('Meaning deleted successfully!'); 
     } catch (error) {
       console.error("Failed to delete meaning:", error);
+      toast.error('Failed to delete meaning. Please try again.'); 
     }
   };
 
-  // Start editing a meaning
   const handleEditMeaning = (index, meaning) => {
     setEditingIndex(index);
     setEditingMeaning(meaning);
   };
 
-  // Save the updated meaning
   const handleSaveMeaning = async (meaningId) => {
-    if (editingMeaning === '') return;
+    if (editingMeaning === '') {
+      toast.error('Meaning cannot be empty!');
+      return;
+    }
     try {
       await updateMeaning({ id: selectedOption.value, meaningId, meaning: editingMeaning });
-      setEditingIndex(null); // Reset editing index
-      setEditingMeaning(''); // Clear editing meaning
-      refetchWord(); // Refetch the word to update the UI
+      setEditingIndex(null);
+      setEditingMeaning('');
+      refetchWord();
+      toast.success('Meaning updated successfully!'); 
     } catch (error) {
       console.error("Failed to update meaning:", error);
+      toast.error('Failed to update meaning. Please try again.'); 
     }
   };
 
@@ -103,13 +137,7 @@ const SearchWord = () => {
           <div className="col-6">
             <div className='searchContainer'>
               <h2>Search For Word</h2>
-              <Select
-                options={options}
-                onInputChange={handleInputChange}
-                onChange={handleChange}
-                isLoading={isLoading}
-                placeholder="Search for a word..."
-              />
+              <Select options={options} onInputChange={handleInputChange} onChange={handleChange} isLoading={isLoading}placeholder="Search for a word..."/>
               {isLoading && <p>Loading...</p>}
               {isError && <p>Error fetching words.</p>}
             </div>
@@ -124,26 +152,10 @@ const SearchWord = () => {
                       {selectedWord.data.meanings.map((meaningObj, index) => (
                         <li key={meaningObj._id}>
                           {editingIndex === index ? (
-                            <input
-                              type="text"
-                              value={editingMeaning}
-                              onChange={(e) => setEditingMeaning(e.target.value)}
-                              placeholder="Edit meaning"
-                            />
-                          ) : (
-                            meaningObj.meaning
-                          )}
+                            <input type="text" value={editingMeaning} onChange={(e) => setEditingMeaning(e.target.value)} placeholder="Edit meaning"/>) : (meaningObj.meaning)}
                           <span className='meaningActions'>
                             {editingIndex === index ? (
-                              <button className='saveButton' onClick={() => handleSaveMeaning(meaningObj._id)}>
-                                <BsFillSave2Fill />
-                              </button>
-                            ) : (
-                              <button className='editButton' onClick={() => handleEditMeaning(index, meaningObj.meaning)}>
-                                <FaEdit />
-                              </button>
-                            )}
-
+                              <button className='saveButton' onClick={() => handleSaveMeaning(meaningObj._id)}><BsFillSave2Fill /></button>) : (<button className='editButton' onClick={() => handleEditMeaning(index, meaningObj.meaning)}><FaEdit /></button>)}
                             {editingIndex !== index && (
                               <button 
                                 className='deleteButton' 
@@ -158,7 +170,7 @@ const SearchWord = () => {
                     </ol>
                   </div>
                 ) : (
-                  <p>No meanings available for this word.</p>
+                  <p className='notFoundText'>No meanings available for this word.</p>
                 )}
                 <form>
                   <div className='addMeaningBox'>
@@ -177,10 +189,7 @@ const SearchWord = () => {
           </div>
         </div>
         <div className='quickAdd'>
-          <OverlayTrigger
-            placement="top"
-            overlay={<Tooltip id="add-word-tooltip">Add Word</Tooltip>}
-          >
+          <OverlayTrigger placement="top"overlay={<Tooltip id="add-word-tooltip">Add Word</Tooltip>}>
             <Button onClick={() => setShowModal(true)}>
               <FaPen />
             </Button>
