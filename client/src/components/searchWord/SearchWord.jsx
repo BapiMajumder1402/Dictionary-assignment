@@ -134,7 +134,7 @@ const SearchWord = () => {
     <div className='blackContainer'>
       <div className="searchAndData">
         <div className="row">
-          <div className="col-6">
+          <div className="col-12 col-lg-6">
             <div className='searchContainer'>
               <h2>Search For Word</h2>
               <Select options={options} onInputChange={handleInputChange} onChange={handleChange} isLoading={isLoading}placeholder="Search for a word..."/>
@@ -142,7 +142,7 @@ const SearchWord = () => {
               {isError && <p>Error fetching words.</p>}
             </div>
           </div>
-          <div className="col-6">
+          <div className="col-12 col-lg-6">
             {selectedOption && selectedWord && (
               <div className='searchContainer'>
                 <h2>Meanings of {selectedWord.data.word}:</h2>
