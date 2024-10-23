@@ -42,7 +42,7 @@ const WordsTable = () => {
 
                 <div className="d-flex justify-content-center align-items-center">
                     <Pagination>
-                        {Array.from({ length: wordsData?.data?.totalPages }, (_, index) => (
+                        {Array?.from({ length: wordsData?.data?.totalPages }, (_, index) => (
                             <Pagination.Item
                                 key={index + 1}
                                 active={index + 1 === currentPage}
